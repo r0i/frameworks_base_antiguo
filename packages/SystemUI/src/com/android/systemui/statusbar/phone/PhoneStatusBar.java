@@ -3337,8 +3337,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 mRecreating = false;
             }
         });
-        // restart the keyguard so it picks up the newly created ScrimController
-        startKeyguard();
 
         // if the keyguard was showing while this change occurred we'll need to do some extra work
         if (mState == StatusBarState.KEYGUARD) {
@@ -3349,6 +3347,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mIconController.hideNotificationIconArea(false);
             mIconController.hideSystemIconArea(false);
         }
+
+        // restart the keyguard so it picks up the newly created ScrimController
+        startKeyguard();
     }
 
     private void removeAllViews(ViewGroup parent) {
