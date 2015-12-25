@@ -51,8 +51,8 @@ public class BatteryMeterView extends View implements DemoMode,
         BatteryController.BatteryStateChangeCallback {
     public static final String TAG = BatteryMeterView.class.getSimpleName();
     public static final String ACTION_LEVEL_TEST = "com.android.systemui.BATTERY_LEVEL_TEST";
-    public static final String SHOW_PERCENT_SETTING = "status_bar_show_battery_percent";
-
+/*    public static final String SHOW_PERCENT_SETTING = "status_bar_show_battery_percent";
+*/
     private static final String STATUS_BAR_BATTERY_STYLE = "status_bar_battery_style";
     private static final String STATUS_BAR_SHOW_BATTERY_PERCENT = "status_bar_show_battery_percent";
 
