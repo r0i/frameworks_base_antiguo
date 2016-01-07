@@ -137,6 +137,8 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     private boolean mBatteryIsCharging;
     private int mBatteryChargeLevel;
 
+    private UserInfoController mUserInfoController;
+
     public void updateBatteryIconSettings() {
         mBatteryView.updateBatteryIconSettings();
         updateVisibilities();
@@ -278,6 +280,15 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         updateClockCollapsedMargin();
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (mUserInfoController != null) {
+            mUserInfoController.removeListener(mUserInfoChangedListener);
+        }
+        setListening(false);
+    }
+
     private void updateClockCollapsedMargin() {
         Resources res = getResources();
         int padding = res.getDimensionPixelSize(R.dimen.clock_collapsed_bottom_margin);
@@ -391,9 +402,12 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         mBatteryLevel.setVisibility(
                 mExpanded ? (mShowBatteryTextExpanded ? View.VISIBLE : View.GONE)
                           : (mShowBatteryText         ? View.VISIBLE : View.GONE));
-        mSettingsContainer.findViewById(R.id.tuner_icon).setVisibility(
+        View tunerIcon = mSettingsContainer.findViewById(R.id.tuner_icon);
+        if (tunerIcon != null) {
+            tunerIcon.setVisibility(
                 TunerService.isTunerEnabled(mContext) ? View.INVISIBLE : View.INVISIBLE);
         TunerService.setTunerEnabled(mContext, true);
+        }
     }
 
     private void updateSignalClusterDetachment() {
@@ -563,13 +577,17 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
         invalidateOutline();
     }
 
+    private UserInfoController.OnUserInfoChangedListener mUserInfoChangedListener =
+            new UserInfoController.OnUserInfoChangedListener() {
+        @Override
+        public void onUserInfoChanged(String name, Drawable picture) {
+            mMultiUserAvatar.setImageDrawable(picture);
+        }
+    };
+
     public void setUserInfoController(UserInfoController userInfoController) {
-        userInfoController.addListener(new UserInfoController.OnUserInfoChangedListener() {
-            @Override
-            public void onUserInfoChanged(String name, Drawable picture) {
-                mMultiUserAvatar.setImageDrawable(picture);
-            }
-        });
+        mUserInfoController = userInfoController;
+        userInfoController.addListener(mUserInfoChangedListener);
     }
 
     @Override
