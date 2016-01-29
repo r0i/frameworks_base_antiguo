@@ -22,4 +22,7 @@
     <!-- Screenshot -->
     <string name="shortcut_screenshot">Screenshot</string>
 
+    <!-- Recents -->
+    <string name="clear_recents">Close all recent</string>
+ 
 </resources>
