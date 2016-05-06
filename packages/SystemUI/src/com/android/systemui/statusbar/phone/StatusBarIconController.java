@@ -21,6 +21,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.PorterDuff.Mode;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -75,7 +76,9 @@ public class StatusBarIconController implements Tunable {
     private ImageView mMoreIcon;
     private BatteryMeterView mBatteryMeterView;
     private TextView mClock;
-
+    
+    private TextView mNetworkTraffic;
+    
     private int mIconSize;
     private int mIconHPadding;
 
@@ -119,6 +122,7 @@ public class StatusBarIconController implements Tunable {
         mStatusIconsKeyguard = (LinearLayout) keyguardStatusBar.findViewById(R.id.statusIcons);
         mBatteryMeterView = (BatteryMeterView) statusBar.findViewById(R.id.battery);
         mClock = (TextView) statusBar.findViewById(R.id.clock);
+        mNetworkTraffic = (TextView) statusBar.findViewById(R.id.networkTraffic);
         mLinearOutSlowIn = AnimationUtils.loadInterpolator(mContext,
                 android.R.interpolator.linear_out_slow_in);
         mFastOutSlowIn = AnimationUtils.loadInterpolator(mContext,
@@ -393,6 +397,9 @@ public class StatusBarIconController implements Tunable {
         mSignalCluster.setIconTint(mIconTint, mDarkIntensity);
         mMoreIcon.setImageTintList(ColorStateList.valueOf(mIconTint));
         mBatteryMeterView.setDarkIntensity(mDarkIntensity);
+        mNetworkTraffic.setTextColor(mIconTint);
+        mNetworkTraffic.setCompoundDrawableTintMode(Mode.MULTIPLY);
+        mNetworkTraffic.setCompoundDrawableTintList(ColorStateList.valueOf(mIconTint));
         mClock.setTextColor(mIconTint);
         applyNotificationIconsTint();
     }
