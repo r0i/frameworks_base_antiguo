@@ -79,6 +79,7 @@ public class StatusBarIconController implements Tunable {
     private View mNotificationIconArea;
     private ImageView mMoreIcon;
     private BatteryMeterView mBatteryMeterView;
+    private TextView mBatteryLevelText;
     private Clock mClock;
     private Clock mCenterClock;
     private Clock mLeftClock;
@@ -130,6 +131,7 @@ public class StatusBarIconController implements Tunable {
         mNotificationIcons.setOverflowIndicator(mMoreIcon);
         mStatusIconsKeyguard = (LinearLayout) keyguardStatusBar.findViewById(R.id.statusIcons);
         mBatteryMeterView = (BatteryMeterView) statusBar.findViewById(R.id.battery);
+        mBatteryLevelText = (TextView) statusBar.findViewById(R.id.battery_level_text);
         mClock = (Clock) statusBar.findViewById(R.id.clock);
         mCenterClockLayout = (LinearLayout)statusBar.findViewById(R.id.center_clock_layout);
         mCenterClock = (Clock) statusBar.findViewById(R.id.center_clock);
@@ -443,6 +445,7 @@ public class StatusBarIconController implements Tunable {
         mSignalCluster.setIconTint(mIconTint, mDarkIntensity);
         mMoreIcon.setImageTintList(ColorStateList.valueOf(mIconTint));
         mBatteryMeterView.setDarkIntensity(mDarkIntensity);
+        mBatteryLevelText.setTextColor(mIconTint);
         mNetworkTraffic.setTextColor(mIconTint);
         mNetworkTraffic.setCompoundDrawableTintMode(Mode.MULTIPLY);
         mNetworkTraffic.setCompoundDrawableTintList(ColorStateList.valueOf(mIconTint));
