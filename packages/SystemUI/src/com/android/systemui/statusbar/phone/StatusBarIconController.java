@@ -81,6 +81,7 @@ public class StatusBarIconController implements Tunable {
     private BatteryMeterView mBatteryMeterView;
     private Clock mClock;
     private Clock mCenterClock;
+    private Clock mLeftClock;
     private LinearLayout mCenterClockLayout;
     private boolean mShowClock;
     private int mClockLocation;
@@ -132,6 +133,7 @@ public class StatusBarIconController implements Tunable {
         mClock = (Clock) statusBar.findViewById(R.id.clock);
         mCenterClockLayout = (LinearLayout)statusBar.findViewById(R.id.center_clock_layout);
         mCenterClock = (Clock) statusBar.findViewById(R.id.center_clock);
+        mLeftClock = (Clock) statusBar.findViewById(R.id.left_clock);
         mNetworkTraffic = (TextView) statusBar.findViewById(R.id.networkTraffic);
         mLinearOutSlowIn = AnimationUtils.loadInterpolator(mContext,
                 android.R.interpolator.linear_out_slow_in);
@@ -145,6 +147,7 @@ public class StatusBarIconController implements Tunable {
 
         mClock.setIconController(this);
         mCenterClock.setIconController(this);
+        mLeftClock.setIconController(this);
  
         TunerService.get(mContext).addTunable(this, ICON_BLACKLIST);
     }
@@ -178,6 +181,7 @@ public class StatusBarIconController implements Tunable {
                 R.dimen.status_bar_icon_padding);
         FontSizeUtils.updateFontSize(mClock, R.dimen.status_bar_clock_size);
         FontSizeUtils.updateFontSize(mCenterClock, R.dimen.status_bar_clock_size);
+        FontSizeUtils.updateFontSize(mLeftClock, R.dimen.status_bar_clock_size);
     }
 
     public void addSystemIcon(String slot, int index, int viewIndex, StatusBarIcon icon) {
@@ -297,6 +301,9 @@ public class StatusBarIconController implements Tunable {
         }
         if (clockLocation == 1 && mCenterClock != null) {
             mCenterClock.setVisibility(visible ? (showClock ? View.VISIBLE : View.GONE) : View.GONE);
+        }
+        if (clockLocation == 2 && mLeftClock != null) {
+            mLeftClock.setVisibility(visible ? (showClock ? View.VISIBLE : View.GONE) : View.GONE);
         }
     }
 
