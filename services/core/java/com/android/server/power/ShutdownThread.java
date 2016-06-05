@@ -52,6 +52,7 @@ import android.os.storage.IMountShutdownObserver;
 import android.system.ErrnoException;
 import android.system.Os;
 
+import com.android.internal.util.ThemeUtils;
 import com.android.internal.telephony.ITelephony;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.power.PowerManagerService;
@@ -156,7 +157,7 @@ public final class ShutdownThread extends Thread {
     public static void shutdown(final Context context, boolean confirm) {
         mReboot = false;
         mRebootSafeMode = false;
-        shutdownInner(context, confirm);
+        shutdownInner(getUiContext(context), confirm);
     }
 
     static void shutdownInner(final Context context, boolean confirm) {
@@ -199,6 +200,8 @@ public final class ShutdownThread extends Thread {
 
         if (confirm) {
             final CloseDialogReceiver closer = new CloseDialogReceiver(context);
+            final Context mUiContext = getUiContext(context);
+
             if (sConfirmDialog != null) {
                 sConfirmDialog.dismiss();
                 sConfirmDialog = null;
@@ -216,7 +219,7 @@ public final class ShutdownThread extends Thread {
 
                 if ((advancedReboot == 1 && !locked) || advancedReboot == 2) {
                     // Include options in power menu for rebooting into recovery or bootloader
-                    sConfirmDialog = new AlertDialog.Builder(context)
+                    sConfirmDialog = new AlertDialog.Builder(mUiContext)
                             .setTitle(titleResourceId)
                             .setItems(
                                     com.android.internal.R.array.shutdown_reboot_options,
@@ -311,7 +314,7 @@ public final class ShutdownThread extends Thread {
         mRebootSafeMode = false;
         mRebootUpdate = false;
         mRebootReason = reason;
-        shutdownInner(context, confirm);
+        shutdownInner(getUiContext(context), confirm);
     }
 
     private static String getShutdownMusicFilePath() {
@@ -888,6 +891,13 @@ public final class ShutdownThread extends Thread {
         if (!done[0]) {
             Log.w(TAG, "Timed out waiting for uncrypt.");
         }
+    }
+
+    private static Context getUiContext(Context context) {
+        Context mUiContext = null;
+        mUiContext = ThemeUtils.createUiContext(context);
+        mUiContext.setTheme(android.R.style.Theme_DeviceDefault_Light_DarkActionBar);
+        return mUiContext != null ? mUiContext : context;
     }
 
     private static void deviceRebootOrShutdown(boolean reboot, String reason) {
