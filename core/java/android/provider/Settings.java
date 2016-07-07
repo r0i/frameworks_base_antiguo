@@ -3252,6 +3252,12 @@ public final class Settings {
          * the setting value. See an example above.
          */
 
+        /**
+         * Whether to display dashboard tiles in a double line layout
+         * @hide
+         */
+        public static final String DASHBOARD_TILEVIEW_DOUBLE_LINES = "dashboard_tileview_double_lines";
+
          /**
          * Whether wifi settings will connect to access point automatically
          * 0 = automatically
@@ -7796,6 +7802,12 @@ public final class Settings {
          * @hide
          */
         public static final String LTE_SERVICE_FORCED = "lte_service_forced";
+
+        /**
+         * Change the number of columns displayed in the Settings dashboard
+         * @hide
+         */
+        public static final String DASHBOARD_COLUMNS = "dashboard_columns";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
