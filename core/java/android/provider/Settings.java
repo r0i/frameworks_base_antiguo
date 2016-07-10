@@ -3361,12 +3361,6 @@ public final class Settings {
          */
         public static final String STATUSBAR_CLOCK_STYLE = "statusbar_clock_style";
 
-		/**
-         * Whether to display dashboard dividers
-         * @hide
-         */
-        public static final String DASHBOARD_TILEVIEW_DIVIDERS = "dashboard_tileview_dividers";
-
         /**
          * Enable setting clock color
          * @hide
