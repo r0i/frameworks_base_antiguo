@@ -202,9 +202,9 @@ bool AssetManager::addAssetPath(const String8& path, int32_t* cookie)
 
     // Skip if we have it already.
     for (size_t i=0; i<mAssetPaths.size(); i++) {
-        if (mAssetPaths.itemAt(i).path == ap.path) {
+        if (mAssetPaths[i].path == ap.path) {
             if (cookie) {
-                *cookie = mAssetPaths.itemAt(i).cookie;
+                *cookie = static_cast<int32_t>(i+1);
             }
             return true;
         }
@@ -243,9 +243,6 @@ bool AssetManager::addAssetPath(const String8& path, int32_t* cookie)
     }
 #endif
 
-    const ssize_t index = mAssetPaths.add(ap, cookie);
-    ap = mAssetPaths.itemAt(index); // get updated version of asset_path
-
     return true;
 }
 
@@ -256,8 +253,8 @@ bool AssetManager::addOverlayPath(const String8& packagePath, int32_t* cookie)
     AutoMutex _l(mLock);
 
     for (size_t i = 0; i < mAssetPaths.size(); ++i) {
-        if (mAssetPaths.itemAt(i).idmap == idmapPath) {
-           *cookie = mAssetPaths.itemAt(i).cookie;
+        if (mAssetPaths[i].idmap == idmapPath) {
+           *cookie = static_cast<int32_t>(i + 1);
             return true;
          }
      }
@@ -271,7 +268,7 @@ bool AssetManager::addOverlayPath(const String8& packagePath, int32_t* cookie)
     String8 targetPath;
     String8 overlayPath;
     if (!ResTable::getIdmapInfo(idmap->getBuffer(false), idmap->getLength(),
-                NULL, NULL, NULL, NULL, &targetPath, &overlayPath)) {
+                NULL, NULL, NULL, &targetPath, &overlayPath)) {
         ALOGW("failed to read idmap file %s\n", idmapPath.string());
         delete idmap;
         return false;
@@ -299,14 +296,13 @@ bool AssetManager::addOverlayPath(const String8& packagePath, int32_t* cookie)
     asset_path oap;
     oap.path = overlayPath;
     oap.type = ::getFileType(overlayPath.string());
-    oap.targetPath = targetPath;
     oap.idmap = idmapPath;
 #if 0
     ALOGD("Overlay added: targetPath=%s overlayPath=%s idmapPath=%s\n",
             targetPath.string(), overlayPath.string(), idmapPath.string());
 #endif
-    const ssize_t index = mAssetPaths.add(oap, cookie);
-    oap = mAssetPaths.itemAt(index); // get updated version of asset_path
+    mAssetPaths.add(oap);
+    *cookie = static_cast<int32_t>(mAssetPaths.size());
 
     if (mResources != NULL) {
         size_t index = mAssetPaths.size() - 1;
@@ -321,35 +317,22 @@ bool AssetManager::createIdmap(const char* targetApkPath, const char* overlayApk
 {
     AutoMutex _l(mLock);
     const String8 paths[2] = { String8(targetApkPath), String8(overlayApkPath) };
-    Asset* assets[2] = {NULL, NULL};
-    bool ret = false;
-    {
-        ResTable tables[2];
+    ResTable tables[2];
 
-        for (int i = 0; i < 2; ++i) {
-            asset_path ap;
-            ap.type = kFileTypeRegular;
-            ap.path = paths[i];
-            ap.cookie = AssetPaths::FIRST_VALID_COOKIE + i;
-            assets[i] = openNonAssetInPathLocked("resources.arsc",
-                    Asset::ACCESS_BUFFER, ap);
-            if (assets[i] == NULL) {
-                ALOGW("failed to find resources.arsc in %s\n", ap.path.string());
-                goto exit;
-            }
-            if (tables[i].add(assets[i], ap.cookie) != NO_ERROR) {
-                ALOGW("failed to add %s to resource table", paths[i].string());
-                goto exit;
-            }
+    for (int i = 0; i < 2; ++i) {
+        asset_path ap;
+        ap.type = kFileTypeRegular;
+        ap.path = paths[i];
+        Asset* ass = openNonAssetInPathLocked("resources.arsc", Asset::ACCESS_BUFFER, ap);
+        if (ass == NULL) {
+            ALOGW("failed to find resources.arsc in %s\n", ap.path.string());
+            return false;
         }
-        ret = tables[0].createIdmap(tables[1], targetCrc, overlayCrc,
-                targetApkPath, overlayApkPath, (void**)outData, outSize) == NO_ERROR;
+        tables[i].add(ass);
     }
 
-exit:
-    delete assets[0];
-    delete assets[1];
-    return ret;
+    return tables[0].createIdmap(tables[1], targetCrc, overlayCrc,
+            targetApkPath, overlayApkPath, (void**)outData, outSize) == NO_ERROR;
 }
 
 bool AssetManager::addDefaultAssets()
@@ -366,41 +349,21 @@ bool AssetManager::addDefaultAssets()
     return addAssetPath(path, NULL) & addAssetPath(pathSlim, NULL);
 }
 
-int32_t AssetManager::nextAssetPath(const int32_t cookie, const String8* targetPath) const
+int32_t AssetManager::nextAssetPath(const int32_t cookie) const
 {
     AutoMutex _l(mLock);
-    const int32_t nextCookie = mAssetPaths.nextCookie(cookie, targetPath);
-    return nextCookie == AssetPaths::NO_SUCH_COOKIE ? -1 : nextCookie;
+    const size_t next = static_cast<size_t>(cookie) + 1;
+    return next > mAssetPaths.size() ? -1 : next;
 }
 
 String8 AssetManager::getAssetPath(const int32_t cookie) const
 {
     AutoMutex _l(mLock);
-    const ssize_t index = mAssetPaths.cookieToIndex(cookie);
-    if (index < 0) {
-        return String8();
+    const size_t which = static_cast<size_t>(cookie) - 1;
+    if (which < mAssetPaths.size()) {
+        return mAssetPaths[which].path;
     }
-    return mAssetPaths.itemAt(index).path;
-}
-
-bool AssetManager::removeAsset(const int32_t cookie)
-{
-    ResTable* res = mResources;
-    if (!res) {
-        return false;
-    }
-
-    AutoMutex _l(mLock);
-
-    const ssize_t index = mAssetPaths.cookieToIndex(cookie);
-    if (index < 0) {
-        return false;
-    }
-    if (res->remove(cookie) != NO_ERROR) {
-        return false;
-    }
-    mAssetPaths.removeAt(index);
-    return true;
+    return String8();
 }
 
 /*
@@ -597,7 +560,7 @@ Asset* AssetManager::openNonAsset(const char* fileName, AccessMode mode, int32_t
         Asset* pAsset = openNonAssetInPathLocked(
             fileName, mode, mAssetPaths.itemAt(i));
         if (pAsset != NULL) {
-            if (outCookie != NULL) *outCookie = mAssetPaths.itemAt(i).cookie;
+            if (outCookie != NULL) *outCookie = static_cast<int32_t>(i + 1);
             return pAsset != kExcludedAsset ? pAsset : NULL;
         }
     }
@@ -607,8 +570,9 @@ Asset* AssetManager::openNonAsset(const char* fileName, AccessMode mode, int32_t
 
 Asset* AssetManager::openNonAsset(const int32_t cookie, const char* fileName, AccessMode mode)
 {
+    const size_t which = static_cast<size_t>(cookie) - 1;
+
     AutoMutex _l(mLock);
-    const size_t which = mAssetPaths.cookieToIndex(cookie);
 
     LOG_FATAL_IF(mAssetPaths.size() == 0, "No assets added to AssetManager");
 
@@ -652,16 +616,12 @@ FileType AssetManager::getFileType(const char* fileName)
         return kFileTypeRegular;
 }
 
-<<<<<<< HEAD
 bool AssetManager::appendPathToResTable(const asset_path& ap, size_t* entryIdx) const {
     // skip those ap's that correspond to system overlays
     if (ap.isSystemOverlay) {
         return true;
     }
 
-=======
-bool AssetManager::appendPathToResTable(const asset_path& ap) const {
->>>>>>> f72fb84... OverlayManagerService (SQUASH)
     Asset* ass = NULL;
     ResTable* sharedRes = NULL;
     bool shared = true;
@@ -696,9 +656,6 @@ bool AssetManager::appendPathToResTable(const asset_path& ap) const {
             }
             
             if (*entryIdx == 0 && ass != NULL) {
-
-            if (nextEntryIdx == 0 && ass != NULL) {
-
                 // If this is the first resource table in the asset
                 // manager, then we are going to cache it so that we
                 // can quickly copy it out for others.
@@ -713,7 +670,6 @@ bool AssetManager::appendPathToResTable(const asset_path& ap) const {
                 overlaysListPath.appendPath("overlays.list");
                 addSystemOverlays(overlaysListPath.string(), ap.path, sharedRes, *entryIdx);
 #endif
-                sharedRes->add(ass, idmap, ap.cookie, false);
                 sharedRes = const_cast<AssetManager*>(this)->
                     mZipSet.setZipResourceTable(ap.path, sharedRes);
             }
@@ -735,7 +691,6 @@ bool AssetManager::appendPathToResTable(const asset_path& ap) const {
         } else {
             ALOGV("Parsing resources for %s", ap.path.string());
             mResources->add(ass, idmap, *entryIdx + 1, !shared);
-            mResources->add(ass, idmap, ap.cookie, !shared);
         }
         onlyEmptyResources = false;
 
@@ -745,7 +700,6 @@ bool AssetManager::appendPathToResTable(const asset_path& ap) const {
     } else {
         ALOGV("Installing empty resources in to table %p\n", mResources);
         mResources->addEmpty(*entryIdx + 1);
-        mResources->addEmpty(ap.cookie);
     }
 
     if (idmap != NULL) {
@@ -827,6 +781,47 @@ Asset* AssetManager::openIdmapLocked(const struct asset_path& ap) const
         }
     }
     return ass;
+}
+
+void AssetManager::addSystemOverlays(const char* pathOverlaysList,
+        const String8& targetPackagePath, ResTable* sharedRes, size_t offset) const
+{
+    FILE* fin = fopen(pathOverlaysList, "r");
+    if (fin == NULL) {
+        return;
+    }
+
+    char buf[1024];
+    while (fgets(buf, sizeof(buf), fin)) {
+        // format of each line:
+        //   <path to apk><space><path to idmap><newline>
+        char* space = strchr(buf, ' ');
+        char* newline = strchr(buf, '\n');
+        asset_path oap;
+
+        if (space == NULL || newline == NULL || newline < space) {
+            continue;
+        }
+
+        oap.path = String8(buf, space - buf);
+        oap.type = kFileTypeRegular;
+        oap.idmap = String8(space + 1, newline - space - 1);
+        oap.isSystemOverlay = true;
+
+        Asset* oass = const_cast<AssetManager*>(this)->
+            openNonAssetInPathLocked("resources.arsc",
+                    Asset::ACCESS_BUFFER,
+                    oap);
+
+        if (oass != NULL) {
+            Asset* oidmap = openIdmapLocked(oap);
+            offset++;
+            sharedRes->add(oass, oidmap, offset + 1, false);
+            const_cast<AssetManager*>(this)->mAssetPaths.add(oap);
+            const_cast<AssetManager*>(this)->mZipSet.addOverlay(targetPackagePath, oap);
+        }
+    }
+    fclose(fin);
 }
 
 const ResTable& AssetManager::getResources(bool required) const
@@ -1295,7 +1290,7 @@ AssetDir* AssetManager::openNonAssetDir(const int32_t cookie, const char* dirNam
 
     pMergedInfo = new SortedVector<AssetDir::FileInfo>;
 
-    const size_t which = mAssetPaths.cookieToIndex(cookie);
+    const size_t which = static_cast<size_t>(cookie) - 1;
 
     if (which < mAssetPaths.size()) {
         const asset_path& ap = mAssetPaths.itemAt(which);
@@ -1968,6 +1963,20 @@ bool AssetManager::SharedZip::isUpToDate()
     return mModWhen == modWhen;
 }
 
+void AssetManager::SharedZip::addOverlay(const asset_path& ap)
+{
+    mOverlays.add(ap);
+}
+
+bool AssetManager::SharedZip::getOverlay(size_t idx, asset_path* out) const
+{
+    if (idx >= mOverlays.size()) {
+        return false;
+    }
+    *out = mOverlays[idx];
+    return true;
+}
+
 AssetManager::SharedZip::~SharedZip()
 {
     if (kIsDebug) {
@@ -2093,6 +2102,22 @@ bool AssetManager::ZipSet::isUpToDate()
     return true;
 }
 
+void AssetManager::ZipSet::addOverlay(const String8& path, const asset_path& overlay)
+{
+    int idx = getIndex(path);
+    sp<SharedZip> zip = mZipFile[idx];
+    zip->addOverlay(overlay);
+}
+
+bool AssetManager::ZipSet::getOverlay(const String8& path, size_t idx, asset_path* out) const
+{
+    sp<SharedZip> zip = SharedZip::get(path, false);
+    if (zip == NULL) {
+        return false;
+    }
+    return zip->getOverlay(idx, out);
+}
+
 /*
  * Compute the zip file's index.
  *
@@ -2112,51 +2137,4 @@ int AssetManager::ZipSet::getIndex(const String8& zip) const
     mZipFile.add(NULL);
 
     return mZipPath.size()-1;
-}
-
-ssize_t AssetManager::AssetPaths::add(const asset_path& ap, int32_t *cookie)
-{
-    asset_path copy(ap);
-    copy.cookie = mNextCookie++;
-    if (cookie) {
-        *cookie = copy.cookie;
-    }
-    if (ap.targetPath == "") {
-        // regular package -> just append it
-        return mAssetPaths.add(copy);
-    }
-
-    const size_t N = mAssetPaths.size();
-    for (ssize_t index = N - 1; index >= 0; index--) {
-        const asset_path& current = mAssetPaths[index];
-        if ((current.targetPath == "" && ap.targetPath == current.path) ||
-                (current.targetPath != "" && ap.targetPath == current.targetPath)) {
-            return mAssetPaths.insertAt(copy, index + 1);
-        }
-    }
-    return -1;
-}
-
-int32_t AssetManager::AssetPaths::nextCookie(const int32_t cookie, const String8* targetPath) const
-{
-    int32_t next = NO_SUCH_COOKIE;
-    for (size_t i = 0; i < mAssetPaths.size(); i++) {
-        const asset_path& ap = mAssetPaths.itemAt(i);
-        if (ap.cookie > cookie && ap.cookie < next &&
-                (!targetPath || ap.targetPath == *targetPath)) {
-            next = ap.cookie;
-        }
-    }
-    return next;
-}
-
-ssize_t AssetManager::AssetPaths::cookieToIndex(const int32_t cookie) const
-{
-    for (size_t i = 0; i < mAssetPaths.size(); i++) {
-        const asset_path& ap = mAssetPaths.itemAt(i);
-        if (ap.cookie == cookie) {
-            return i;
-        }
-    }
-    return NO_SUCH_COOKIE;
 }
