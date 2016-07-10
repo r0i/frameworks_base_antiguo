@@ -248,7 +248,6 @@
         <activity
             android:name="com.android.systemui.shortcuts.Screenshot"
             android:label="@string/shortcut_screenshot"
-            android:icon="@org.slim.framework:drawable/ic_sysbar_screenshot"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
