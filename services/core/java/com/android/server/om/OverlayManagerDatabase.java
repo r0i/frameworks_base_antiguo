@@ -66,7 +66,7 @@ class OverlayManagerDatabase {
         OverlayInfo oi = row.getOverlayInfo();
         mTable.remove(row);
         if (oi != null) {
-            notifyOverlayRemoved(oi, false);
+            notifyOverlayRemoved(oi);
         }
     }
 
@@ -120,7 +120,7 @@ class OverlayManagerDatabase {
             OverlayInfo oi = row.getOverlayInfo();
             row.setUpgrading(true);
             row.setState(STATE_NOT_APPROVED_UNKNOWN);
-            notifyOverlayRemoved(oi, false);
+            notifyOverlayRemoved(oi);
             notifyDatabaseChanged();
         } else {
             row.setUpgrading(false);
@@ -157,8 +157,7 @@ class OverlayManagerDatabase {
         return row.getState();
     }
 
-    void setState(@NonNull String packageName, int userId, int state, boolean shouldWait)
-            throws BadKeyException {
+    void setState(@NonNull String packageName, int userId, int state) throws BadKeyException {
         DatabaseRow row = select(packageName, userId);
         if (row == null) {
             throw new BadKeyException(packageName, userId);
@@ -167,10 +166,10 @@ class OverlayManagerDatabase {
         row.setState(state);
         OverlayInfo current = row.getOverlayInfo();
         if (previous.state == STATE_NOT_APPROVED_UNKNOWN) {
-            notifyOverlayAdded(current, shouldWait);
+            notifyOverlayAdded(current);
             notifyDatabaseChanged();
         } else if (current.state != previous.state) {
-            notifyOverlayChanged(current, previous, shouldWait);
+            notifyOverlayChanged(current, previous);
             notifyDatabaseChanged();
         }
     }
@@ -585,32 +584,31 @@ class OverlayManagerDatabase {
         }
     }
 
-    private void notifyOverlayAdded(final OverlayInfo oi, boolean shouldWait) {
+    private void notifyOverlayAdded(final OverlayInfo oi) {
         if (DEBUG) {
             assertNotNull(oi);
         }
         for (ChangeListener listener : mListeners) {
-            listener.onOverlayAdded(oi, shouldWait);
+            listener.onOverlayAdded(oi);
         }
     }
 
-    private void notifyOverlayRemoved(final OverlayInfo oi, boolean shouldWait) {
+    private void notifyOverlayRemoved(final OverlayInfo oi) {
         if (DEBUG) {
             assertNotNull(oi);
         }
         for (ChangeListener listener : mListeners) {
-            listener.onOverlayRemoved(oi, shouldWait);
+            listener.onOverlayRemoved(oi);
         }
     }
 
-    private void notifyOverlayChanged(final OverlayInfo oi, final OverlayInfo oldOi,
-            boolean shouldWait) {
+    private void notifyOverlayChanged(final OverlayInfo oi, final OverlayInfo oldOi) {
         if (DEBUG) {
             assertNotNull(oi);
             assertNotNull(oldOi);
         }
         for (ChangeListener listener : mListeners) {
-            listener.onOverlayChanged(oi, oldOi, shouldWait);
+            listener.onOverlayChanged(oi, oldOi);
         }
     }
 
@@ -625,10 +623,9 @@ class OverlayManagerDatabase {
 
     interface ChangeListener {
         void onDatabaseChanged();
-        void onOverlayAdded(@NonNull OverlayInfo oi, boolean shouldWait);
-        void onOverlayRemoved(@NonNull OverlayInfo oi, boolean shouldWait);
-        void onOverlayChanged(@NonNull OverlayInfo oi, @NonNull OverlayInfo oldOi,
-                boolean shouldWait);
+        void onOverlayAdded(@NonNull OverlayInfo oi);
+        void onOverlayRemoved(@NonNull OverlayInfo oi);
+        void onOverlayChanged(@NonNull OverlayInfo oi, @NonNull OverlayInfo oldOi);
         void onOverlayPriorityChanged(@NonNull OverlayInfo oi);
     }
 

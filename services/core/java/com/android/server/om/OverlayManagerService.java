@@ -457,8 +457,8 @@ public class OverlayManagerService extends SystemService {
         }
 
         @Override
-        public boolean setEnabled(String packageName, boolean enable, int userId,
-                boolean shouldWait) throws RemoteException {
+        public boolean setEnabled(String packageName, boolean enable, int userId)
+                throws RemoteException {
             enforceChangeConfigurationPermission("setEnabled");
             userId = handleIncomingUser(userId, "setEnabled");
             if (packageName == null) {
@@ -468,7 +468,7 @@ public class OverlayManagerService extends SystemService {
             final long ident = Binder.clearCallingIdentity();
             try {
                 synchronized (mLock) {
-                    return mImpl.onSetEnabled(packageName, enable, userId, shouldWait);
+                    return mImpl.onSetEnabled(packageName, enable, userId);
                 }
             } finally {
                 Binder.restoreCallingIdentity(ident);
@@ -586,15 +586,6 @@ public class OverlayManagerService extends SystemService {
                         message);
             }
         }
-
-        public void refresh(int uid) {
-            Collection<String> targets;
-            synchronized (mLock) {
-                targets = mImpl.onSwitchUser(uid);
-            }
-
-            updateAssets(uid, targets.toArray(new String[targets.size()]));
-        }
     };
 
     private boolean isOverlayPackage(@NonNull PackageInfo pi) {
@@ -608,48 +599,43 @@ public class OverlayManagerService extends SystemService {
         }
 
         @Override
-        public void onOverlayAdded(@NonNull OverlayInfo oi, boolean shouldWait) {
-            scheduleBroadcast(Intent.ACTION_OVERLAY_ADDED, oi, oi.isEnabled(), shouldWait);
+        public void onOverlayAdded(@NonNull OverlayInfo oi) {
+            scheduleBroadcast(Intent.ACTION_OVERLAY_ADDED, oi, oi.isEnabled());
         }
 
         @Override
-        public void onOverlayRemoved(@NonNull OverlayInfo oi, boolean shouldWait) {
-            scheduleBroadcast(Intent.ACTION_OVERLAY_REMOVED, oi, oi.isEnabled(), shouldWait);
+        public void onOverlayRemoved(@NonNull OverlayInfo oi) {
+            scheduleBroadcast(Intent.ACTION_OVERLAY_REMOVED, oi, oi.isEnabled());
         }
 
         @Override
-        public void onOverlayChanged(@NonNull OverlayInfo oi, @NonNull OverlayInfo oldOi,
-                boolean shouldWait) {
-            scheduleBroadcast(Intent.ACTION_OVERLAY_CHANGED, oi,
-                    oi.isEnabled() != oldOi.isEnabled(), shouldWait);
+        public void onOverlayChanged(@NonNull OverlayInfo oi, @NonNull OverlayInfo oldOi) {
+            scheduleBroadcast(Intent.ACTION_OVERLAY_CHANGED, oi, oi.isEnabled() != oldOi.isEnabled());
         }
 
         @Override
         public void onOverlayPriorityChanged(@NonNull OverlayInfo oi) {
-            scheduleBroadcast(Intent.ACTION_OVERLAY_PRIORITY_CHANGED, oi, oi.isEnabled(), false);
+            scheduleBroadcast(Intent.ACTION_OVERLAY_PRIORITY_CHANGED, oi, oi.isEnabled());
         }
 
         private void scheduleBroadcast(@NonNull String action, @NonNull OverlayInfo oi,
-                boolean doUpdate, boolean shouldWait) {
-            FgThread.getHandler().post(new BroadcastRunnable(action, oi, doUpdate, shouldWait));
+                boolean doUpdate) {
+            FgThread.getHandler().post(new BroadcastRunnable(action, oi, doUpdate));
         }
 
         private class BroadcastRunnable extends Thread {
             private final String mAction;
             private final OverlayInfo mOverlayInfo;
             private final boolean mDoUpdate;
-            private final boolean shouldWait;
 
-            public BroadcastRunnable(String action, OverlayInfo oi, boolean doUpdate,
-                    boolean shouldWait) {
+            public BroadcastRunnable(String action, OverlayInfo oi, boolean doUpdate) {
                 mAction = action;
                 mOverlayInfo = oi;
                 mDoUpdate = doUpdate;
-                this.shouldWait = shouldWait;
             }
 
             public void run() {
-                if (mDoUpdate && !shouldWait) {
+                if (mDoUpdate) {
                     updateAssets(mOverlayInfo.userId, mOverlayInfo.targetPackageName);
                 }
                 sendBroadcast(mAction, mOverlayInfo.packageName, mOverlayInfo.userId);
