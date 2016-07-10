@@ -18,14 +18,12 @@
 -->
 
 <!-- This is the combined status bar / notification panel window. -->
-<com.android.systemui.statusbar.phone.NavBarInsetLayout
+<com.android.systemui.statusbar.phone.StatusBarWindowView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:sysui="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:focusable="true"
-    android:fitsSystemWindows="true"
-    android:descendantFocusability="afterDescendants">
+    android:fitsSystemWindows="true">
 
     <com.android.systemui.statusbar.BackDropView
             android:id="@+id/backdrop"
@@ -45,20 +43,12 @@
                    android:visibility="invisible" />
     </com.android.systemui.statusbar.BackDropView>
 
-    <com.android.systemui.statusbar.phone.NavBarInsetLayout
-        android:id="@+id/scrimview"
+    <com.android.systemui.statusbar.ScrimView android:id="@+id/scrim_behind"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible"
+        android:importantForAccessibility="no"
         sysui:ignoreRightInset="true"
-        android:fitsSystemWindows="true">
-
-    <com.android.systemui.statusbar.ScrimView
-        android:id="@+id/scrim_behind"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        sysui:ignoreRightInset="true"
-        android:importantForAccessibility="no"/>
+        />
 
     <com.android.systemui.statusbar.AlphaOptimizedView
         android:id="@+id/heads_up_scrim"
@@ -66,8 +56,6 @@
         android:layout_height="@dimen/heads_up_scrim_height"
         android:background="@drawable/heads_up_scrim"
         android:importantForAccessibility="no"/>
-
-    </com.android.systemui.statusbar.phone.NavBarInsetLayout>
 
     <include layout="@layout/status_bar"
         android:layout_width="match_parent"
@@ -109,4 +97,4 @@
         sysui:ignoreRightInset="true"
         />
 
-</com.android.systemui.statusbar.phone.NavBarInsetLayout>
+</com.android.systemui.statusbar.phone.StatusBarWindowView>
