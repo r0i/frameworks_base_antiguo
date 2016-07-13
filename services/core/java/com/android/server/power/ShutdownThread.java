@@ -74,8 +74,6 @@ import java.io.OutputStreamWriter;
 import org.slim.provider.SlimSettings;
 import org.slim.utils.BuildInfo;
 
-import org.xdevs23.utils.root.RootShellExecutor;
-
 public final class ShutdownThread extends Thread {
     // constants
     private static final String TAG = "ShutdownThread";
@@ -232,13 +230,6 @@ public final class ShutdownThread extends Thread {
 
                                     if (actions != null && which < actions.length)
                                         mRebootReason = actions[which];
-                                    
-                                    if(mRebootReason.toLowerCase().equals("softreboot")) {
-                                        // Why sync? Simple: make sure stuff is written to
-                                        // storage before hotrebooting to prevent data loss
-                                        RootShellExecutor.execShell("sync && busybox killall system_server");
-                                        return;
-                                    }
 
                                     mReboot = true;
                                     beginShutdownSequence(context);
