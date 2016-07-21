@@ -2906,12 +2906,6 @@ public final class Settings {
         public static final Validator USER_ROTATION_VALIDATOR =
                 new InclusiveIntegerRangeValidator(0, 3);
 
-         /**
-         * Enable statusbar double tap gesture on to put device to sleep
-         * @hide
-         */
-        public static final String DOUBLE_TAP_SLEEP_GESTURE = "double_tap_sleep_gesture";
-
         /**
          * Control whether the rotation lock toggle in the System UI should be hidden.
          * Typically this is done for accessibility purposes to make it harder for
