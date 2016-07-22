@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2013-2016 SlimRoms Project
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- Content description of the superuser tile -->
+    <string name="accessibility_su_active">Superuser sesion activada</string>
+
+    <!-- Kill app toast -->
+    <string name="app_killed_message">Matar app</string>
+
+    <!-- Screenshot -->
+    <string name="shortcut_screenshot">Screenshot</string>
+
+    <!-- Recents -->
+    <string name="clear_recents">Cerrar todas las recientes</string>
+    <string name="recents_options_title">opciones del menu recientes</string>
+    <string name="show_clear_all_recents_button_title">Boton de borrar todo</string>
+    <string name="show_clear_all_recents_button_summary">Mostrar boton de borrar todo</string>
+    <string name="recents_clear_all_location_title">Localizacion del boton de borrar todo</string>
+    <string name="recents_clear_all_location_top_right">Arriba a la derecha</string>
+    <string name="recents_clear_all_location_top_left">Arriba a la izquierda</string>
+    <string name="recents_clear_all_location_top_center">Arriba centrado</string>
+    <string name="recents_clear_all_location_bottom_right">Abajo a la derecha</string>
+    <string name="recents_clear_all_location_bottom_left">Abajo a la izquierda</string>
+    <string name="recents_clear_all_location_bottom_center">Abajo centrado</string>
+    <string name="recents_clear_all_dismiss_all_title">Borrar todas las tareas</string>
+    <string name="recents_clear_all_dismiss_all_summary">Incluir tarea de primer plano al borrar todo</string>
+    <string name="recents_searchbar_title">Barra de busqueda</string>
+    <string name="recents_searchbar_summary">Mostrar la barra de busqueda de google en la pantalla de recientes</string>
+
+    <!-- Battery level for expanded quick settings [CHAR LIMIT=2] -->
+    <string name="battery_level_template"><xliff:g id="level" example="45">%d</xliff:g>%%</string>
+
+    <!-- Battery level text while charging [CHAR LIMIT=2] -->
+    <string name="battery_level_template_charging"><xliff:g id="level" example="45">%d</xliff:g>~</string>
+ 
+    <!-- Settings - Battery Options -->
+    <string name="battery_icon_options_title">Opciones del icono de la bateria</string>
+
+    <!-- Settings - Battery Style -->
+    <string name="status_bar_battery_style_title">Estilo de la bateria</string>
+    <string name="status_bar_battery_style_circle">Circular</string>
+    <string name="status_bar_battery_style_dotted_circle">Circular punteado</string>
+    <string name="status_bar_battery_style_text">Texto</string>
+    <string name="status_bar_battery_style_hidden">Oculta</string>
+    <string name="status_bar_battery_style_icon_portrait">Icono vertical</string>
+    <string name="status_bar_battery_style_icon_landscape">Icono horizontal</string>
+
+    <!-- Settings - Battery percentage -->
+    <string name="status_bar_battery_percentage_title">Mostra porcentaje en la bateria</string>
+    <string name="status_bar_battery_percentage_dialog_title">Porcentaje de bateria</string>
+    <string name="status_bar_battery_percentage_default">Oculto (defecto)</string>
+    <string name="status_bar_battery_percentage_text_inside">Dentro del icono</string>
+    <string name="status_bar_battery_percentage_text_next">Al lado del icono</string>
+
+   <!-- Dialog Cancel/OK -->
+    <string name="cancel">Cancelar</string>
+    <string name="dlg_ok">Ok</string>
+    <string name="yes">Si</string>
+    <string name="no">No</string>
+
+    <!-- Off/On/Toggle -->
+    <string name="off">Off</string>
+    <string name="on">On</string>
+    <string name="toggle">Toggle</string>
+    <string name="shortcut_toggle_title">Para realizar la accion</string>
+
+</resources>
