@@ -905,9 +905,4 @@ public class StatusBarHeaderView extends RelativeLayout implements View.OnClickL
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
     }
-
-    @Override
-    public void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-    }
 }

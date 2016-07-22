@@ -126,14 +126,6 @@ public class KeyguardStatusBarView extends RelativeLayout
                 getResources().getDimensionPixelSize(R.dimen.battery_level_text_size));
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        if (mUserInfoController != null) {
-            mUserInfoController.removeListener(mUserInfoChangedListener);
-        }
-    }
-
     private void loadDimens() {
         mSystemIconsSwitcherHiddenExpandedMargin = getResources().getDimensionPixelSize(
                 R.dimen.system_icons_switcher_hidden_expanded_margin);
@@ -317,7 +309,7 @@ public class KeyguardStatusBarView extends RelativeLayout
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-
+        
         if (mBatteryController != null) {
             mBatteryController.removeStateChangedCallback(this);
         }
